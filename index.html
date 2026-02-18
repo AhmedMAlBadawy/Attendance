@@ -78,17 +78,6 @@ const lecturePrefixes = [
  "AS-Alg",
  "AS-OSS"
 ];
-//29.98721403529377, 31.324099553619597
-// YOUR INSTITUTE LOCATIONS (EDIT THESE)
-// Add as many locations as needed. Radius is in meters.
-const allowedLocations = [
- { lat: 29.98721403529377, lng: 31.324099553619597, radius: 100 },
-  { lat:  29.864708070303223, lng: 31.31339007466639, radius: 100 },
-  
- // { lat: 29.8700, lng: 31.3200, radius: 120 },
-];
-
-
 // GOOGLE FORM CONFIG (PER LECTURE PREFIX)
 const formActionByPrefix = {
  "CA-DSS": "https://docs.google.com/forms/d/e/1FAIpQLSc7puySU0MdO81vNPRFnzRd-GH91woDHyUkgPBD5ukrqp9XDA/formResponse",
@@ -107,90 +96,17 @@ const fieldStudentName = "entry.1024018719";
 const fieldLectureCode = "entry.459549981";
 const fieldStudentLocation = "entry.1152713796";
 
-// Holds last known location string
-let lastLocation = "";
-
-
-
-function getDistance(lat1, lon1, lat2, lon2)
+// LOCATION VALIDATION REMOVED
+if(!attendanceEnabled)
 {
- const R = 6371000;
-
- const dLat = (lat2-lat1)*Math.PI/180;
- const dLon = (lon2-lon1)*Math.PI/180;
-
- const a =
- Math.sin(dLat/2)*Math.sin(dLat/2)+
- Math.cos(lat1*Math.PI/180)*
- Math.cos(lat2*Math.PI/180)*
- Math.sin(dLon/2)*Math.sin(dLon/2);
-
- const c = 2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-
-return R*c;
-}
-
-function isInsideAnyAllowedLocation(lat, lng)
-{
- for(const loc of allowedLocations)
- {
-  const distance = getDistance(
-   loc.lat,
-   loc.lng,
-   lat,
-   lng
-  );
-
-  if(distance <= loc.radius)
-  {
-   return true;
-  }
- }
-
- return false;
-}
-
-
-// CHECK GPS FIRST
-navigator.geolocation.getCurrentPosition(
-
-function(position)
-{
-
- if(!attendanceEnabled)
- {
-  document.getElementById("checking").style.display="none";
-  document.getElementById("disabled").style.display="block";
-  return;
- }
-
- if(isInsideAnyAllowedLocation(
-   position.coords.latitude,
-   position.coords.longitude
- ))
-{
-  document.getElementById("checking").style.display="none";
-  document.getElementById("formSection").style.display="block";
-  // Store location string for submission
-  lastLocation = position.coords.latitude.toFixed(6) + "," + position.coords.longitude.toFixed(6);
-  document.getElementById("studentLocation").value = lastLocation;
+ document.getElementById("checking").style.display="none";
+ document.getElementById("disabled").style.display="block";
 }
 else
 {
-  document.getElementById("checking").style.display="none";
-  document.getElementById("denied").style.display="block";
- }
-
-},
-
-function()
-{
- alert("Please allow Location Permission");
-},
-
-{enableHighAccuracy:true}
-
-);
+ document.getElementById("checking").style.display="none";
+ document.getElementById("formSection").style.display="block";
+}
 
 
 
@@ -208,7 +124,7 @@ function submitAttendance()
  document.getElementById("lectureCode").value;
 
  const location =
- document.getElementById("studentLocation").value;
+ document.getElementById("studentLocation").value || "N/A";
 
 
  if(!id || !name || !code)
@@ -235,13 +151,6 @@ function submitAttendance()
   alert("Wrong lecture code");
   return;
  }
-
- if(!location)
- {
-  alert("Location not captured yet");
-  return;
- }
-
 
  const formData = new FormData();
 
