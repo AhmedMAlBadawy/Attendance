@@ -41,8 +41,6 @@ input, button {
 ❌ Attendance is currently closed
 </div>
 
-<div id="locationInfo" style="display:none; margin-top:8px; color:#333;"></div>
-
 <div id="formSection">
 
 <input id="studentId" placeholder="Student ID"><br>
@@ -80,22 +78,6 @@ const lecturePrefixes = [
  "AS-Alg",
  "AS-OSS"
 ];
-//29.98721403529377, 31.324099553619597
-// YOUR INSTITUTE LOCATIONS (EDIT THESE)
-// Add as many locations as needed. Radius is in meters.
-const allowedLocations = [
- { lat: 29.98721403529377, lng: 31.324099553619597, radius: 100 },
-  { lat:  29.864708070303223, lng: 31.31339007466639, radius: 100 },
-  { lat:   30.048930941576504, lng: 31.46853589907629, radius: 100 },
-  { lat:   30.04886303139118, lng: 31.468509747537592, radius: 100 },
-  { lat:   30.048955319580383, lng: 31.46851175919441, radius: 100 },
- { lat:   29.9869446852405, lng: 31.324031164820816, radius: 100 },
- 
- 
- // { lat: 29.8700, lng: 31.3200, radius: 120 },
-];
-
-
 // GOOGLE FORM CONFIG (PER LECTURE PREFIX)
 const formActionByPrefix = {
  "CA-DSS": "https://docs.google.com/forms/d/e/1FAIpQLSc7puySU0MdO81vNPRFnzRd-GH91woDHyUkgPBD5ukrqp9XDA/formResponse",
@@ -114,104 +96,17 @@ const fieldStudentName = "entry.1024018719";
 const fieldLectureCode = "entry.459549981";
 const fieldStudentLocation = "entry.1152713796";
 
-// Holds last known location string
-let lastLocation = "";
-
-
-
-function getDistance(lat1, lon1, lat2, lon2)
+if(!attendanceEnabled)
 {
- const R = 6371000;
-
- const dLat = (lat2-lat1)*Math.PI/180;
- const dLon = (lon2-lon1)*Math.PI/180;
-
- const a =
- Math.sin(dLat/2)*Math.sin(dLat/2)+
- Math.cos(lat1*Math.PI/180)*
- Math.cos(lat2*Math.PI/180)*
- Math.sin(dLon/2)*Math.sin(dLon/2);
-
- const c = 2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-
-return R*c;
-}
-
-function isInsideAnyAllowedLocation(lat, lng)
-{
- for(const loc of allowedLocations)
- {
-  const distance = getDistance(
-   loc.lat,
-   loc.lng,
-   lat,
-   lng
-  );
-
-  if(distance <= loc.radius)
-  {
-   return true;
-  }
- }
-
- return false;
-}
-
-
-// CHECK GPS FIRST
-navigator.geolocation.getCurrentPosition(
-
-function(position)
-{
-
- if(!attendanceEnabled)
- {
-  document.getElementById("checking").style.display="none";
-  document.getElementById("disabled").style.display="block";
-  return;
- }
-
- if(isInsideAnyAllowedLocation(
-   position.coords.latitude,
-   position.coords.longitude
- ))
-{
-  document.getElementById("checking").style.display="none";
-  document.getElementById("formSection").style.display="block";
-  // Store location string for submission
-  lastLocation = position.coords.latitude.toFixed(6) + "," + position.coords.longitude.toFixed(6);
-  document.getElementById("studentLocation").value = lastLocation;
-  const locInfo = document.getElementById("locationInfo");
-  locInfo.textContent = "Current location: " + lastLocation;
-  locInfo.style.display = "block";
+ document.getElementById("checking").style.display="none";
+ document.getElementById("disabled").style.display="block";
 }
 else
 {
-  document.getElementById("checking").style.display="none";
-  document.getElementById("denied").style.display="block";
-  const locInfo = document.getElementById("locationInfo");
-  locInfo.textContent = "Current location: " +
-   position.coords.latitude.toFixed(6) + "," + position.coords.longitude.toFixed(6);
-  locInfo.style.display = "block";
- }
-
-},
-
-function(error)
-{
  document.getElementById("checking").style.display="none";
- document.getElementById("denied").style.display="block";
- const locInfo = document.getElementById("locationInfo");
- locInfo.textContent = "Current location: unavailable (" +
-  (error && error.message ? error.message : "permission denied") + ")";
- locInfo.style.display = "block";
-},
-
-{enableHighAccuracy:true}
-
-);
-
-
+ document.getElementById("formSection").style.display="block";
+ document.getElementById("studentLocation").value = "N/A";
+}
 
 // SUBMIT TO GOOGLE FORM
 function submitAttendance()
@@ -319,3 +214,7 @@ function validateLectureCode(code)
 
 </body>
 </html>
+
+
+
+
