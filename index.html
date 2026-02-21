@@ -96,7 +96,76 @@ const fieldStudentName = "entry.1024018719";
 const fieldLectureCode = "entry.459549981";
 const fieldStudentLocation = "entry.1152713796";
 
-// LOCATION VALIDATION REMOVED
+// LOCATION VALIDATION
+// Update these to your campus coordinates + allowed radius.
+const campusLat = 0;
+const campusLng = 0;
+const campusRadiusMeters = 150;
+
+function toRad(value)
+{
+ return value * Math.PI / 180;
+}
+
+function distanceMeters(lat1, lng1, lat2, lng2)
+{
+ const R = 6371000;
+ const dLat = toRad(lat2 - lat1);
+ const dLng = toRad(lng2 - lng1);
+ const a =
+  Math.sin(dLat/2) * Math.sin(dLat/2) +
+  Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+  Math.sin(dLng/2) * Math.sin(dLng/2);
+ const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+ return R * c;
+}
+
+function showDenied(message)
+{
+ document.getElementById("checking").style.display="none";
+ document.getElementById("denied").style.display="block";
+ if(message)
+ {
+  document.getElementById("denied").textContent = message;
+ }
+}
+
+function showForm()
+{
+ document.getElementById("checking").style.display="none";
+ document.getElementById("formSection").style.display="block";
+}
+
+function checkLocation()
+{
+ if(!navigator.geolocation)
+ {
+  showDenied("❌ Location not supported on this device");
+  return;
+ }
+
+ navigator.geolocation.getCurrentPosition(
+  (pos) =>
+  {
+   const lat = pos.coords.latitude;
+   const lng = pos.coords.longitude;
+   const dist = distanceMeters(lat, lng, campusLat, campusLng);
+   document.getElementById("studentLocation").value = lat + "," + lng;
+
+   if(dist <= campusRadiusMeters)
+   {
+    showForm();
+   }
+   else
+   {
+    showDenied("❌ You must be inside Campus");
+   }
+  },
+  () => showDenied("❌ Location permission denied"),
+  { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+ );
+}
+
 if(!attendanceEnabled)
 {
  document.getElementById("checking").style.display="none";
@@ -104,8 +173,7 @@ if(!attendanceEnabled)
 }
 else
 {
- document.getElementById("checking").style.display="none";
- document.getElementById("formSection").style.display="block";
+ checkLocation();
 }
 
 
