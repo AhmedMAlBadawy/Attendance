@@ -41,6 +41,8 @@ input, button {
 ❌ Attendance is currently closed
 </div>
 
+<div id="locationInfo" style="display:none; margin-top:8px; color:#333;"></div>
+
 <div id="formSection">
 
 <input id="studentId" placeholder="Student ID"><br>
@@ -179,18 +181,30 @@ function(position)
   // Store location string for submission
   lastLocation = position.coords.latitude.toFixed(6) + "," + position.coords.longitude.toFixed(6);
   document.getElementById("studentLocation").value = lastLocation;
+  const locInfo = document.getElementById("locationInfo");
+  locInfo.textContent = "Current location: " + lastLocation;
+  locInfo.style.display = "block";
 }
 else
 {
   document.getElementById("checking").style.display="none";
   document.getElementById("denied").style.display="block";
+  const locInfo = document.getElementById("locationInfo");
+  locInfo.textContent = "Current location: " +
+   position.coords.latitude.toFixed(6) + "," + position.coords.longitude.toFixed(6);
+  locInfo.style.display = "block";
  }
 
 },
 
-function()
+function(error)
 {
- alert("Please allow Location Permission");
+ document.getElementById("checking").style.display="none";
+ document.getElementById("denied").style.display="block";
+ const locInfo = document.getElementById("locationInfo");
+ locInfo.textContent = "Current location: unavailable (" +
+  (error && error.message ? error.message : "permission denied") + ")";
+ locInfo.style.display = "block";
 },
 
 {enableHighAccuracy:true}
